@@ -1,0 +1,66 @@
+Code base + Dockerfile
+↓ docker buildx build .
+Image:
+↓ docker container create --name <NAME> <IMAGE>
+Latent Container
+↓ docker container start <NAME>
+Running Container
+
+
+Nothing
+	↓ docker image pull <IMAGE>
+Image
+
+Nothing
+	↓ docker run <IMAGE>
+Running Container
+
+docker image (mostly aliased as docker <command>)
+	build: build image from Dockerfile
+	pull: download from registry
+	rm (alias docker rmi): 
+	ls (alias docker images): list images
+
+docker container (mostly aliased as docker <command>)
+	create/rm: create/remove a stopped container
+	start/stop: convert between active and stopped container
+	restart
+
+	exec: execute a command inside a given container
+	cp: copy files between docker containers and local
+	export: export containers file system as tarball to stdin
+
+	pause/unpause: pause active and unpause paused containers
+	kill: SIGTERM instead of SIGKILL
+	prune (no alias): remove all stopped containers
+	rename: rename container
+
+	ls (docker ps): list containers — -a include stopped)
+	port: port mapping of container to local machine
+	stats: live data on active containers
+
+docker volume
+	ls: list all volumes
+	rm: remove volume by name
+	prune -a: prune all unused volumes
+	create: create an unused volume
+
+docker network:
+	ls: list networks
+	prune: remove all unused networks
+	create/rm: create/remove a network
+	connect/disconnect: connect disconnect a container to a network
+	
+
+docker compose
+create: create containers for service volumes? networks?
+start: start created containers volumes? networks
+up: create + start
+down: stop and remove containers, networks, volumes and images
+build: build service???
+
+cp: copy files between service containers and local filesystem
+
+Viewing Shenanigans: config/convert, 
+
+docker search: search for images
