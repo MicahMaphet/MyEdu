@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Who ran bitcoin, year by year (2008–2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Source+Serif+4:opsz,wght@8..60,400..650&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F5; --panel:#FFFFFF; --ink:#17202E; --muted:#5A6678; --rule:#D3DAE3;
+  --btc:#D27206; --ex:#2D74BD; --mine:#647A18; --hold:#7350C2; --onbar:#FFFFFF;
+  --grid:rgba(23,32,46,.09); --fill:rgba(210,114,6,.10);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#162031; --panel:#1D293C; --ink:#ECE7DC; --muted:#93A0B4; --rule:#2D3B52;
+    --btc:#F7931A; --ex:#86BCEB; --mine:#BACD6E; --hold:#C4A9F3; --onbar:#101722;
+    --grid:rgba(236,231,220,.08); --fill:rgba(247,147,26,.12);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#162031; --panel:#1D293C; --ink:#ECE7DC; --muted:#93A0B4; --rule:#2D3B52;
+  --btc:#F7931A; --ex:#86BCEB; --mine:#BACD6E; --hold:#C4A9F3; --onbar:#101722;
+  --grid:rgba(236,231,220,.08); --fill:rgba(247,147,26,.12);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(18px,3.2vw,44px)}
+.sans{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+
+header h1{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-weight:720;font-stretch:100%;font-size:clamp(1.35rem,2.4vw,1.9rem);line-height:1.15;margin:0 0 .25rem;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:62ch}
+
+.main{display:grid;gap:clamp(14px,2vw,26px) clamp(20px,4vw,56px);margin-top:clamp(18px,3vw,34px);
+  grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+  grid-template-areas:"clock detail" "stage stage" "controls controls"}
+.clock{grid-area:clock;align-self:end}
+.detail{grid-area:detail;min-height:19.5rem;align-self:end}
+.stage{grid-area:stage}
+.controls{grid-area:controls}
+
+.year{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-weight:860;font-stretch:125%;font-size:clamp(4.6rem,15vw,11.5rem);line-height:.8;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin:0;display:block}
+.year.tick{animation:tick .32s ease-out}
+@keyframes tick{from{transform:translateY(.08em);opacity:.35}to{transform:none;opacity:1}}
+.pricenow{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-stretch:100%;font-size:clamp(1rem,1.6vw,1.2rem);margin-top:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pricenow b{color:var(--btc);font-weight:750;font-size:1.35em;letter-spacing:-.01em}
+
+.detail h2{font-weight:620;font-size:clamp(1.25rem,2vw,1.6rem);line-height:1.2;margin:0 0 .5rem}
+.detail p{margin:0 0 1rem;max-width:62ch}
+.detail .fade{transition:opacity .25s ease}
+.detail .fade.out{opacity:0}
+.players-h{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-weight:650;font-size:.82rem;color:var(--muted);margin:0 0 .4rem}
+.players{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem 1.4rem}
+.players li{display:grid;grid-template-columns:.7rem 1fr;gap:.5rem;align-items:baseline;line-height:1.3}
+.players .sw{width:.62rem;height:.62rem;border-radius:2px;background:var(--muted);transform:translateY(.05rem)}
+.players .sw.ex{background:var(--ex)} .players .sw.mine{background:var(--mine)} .players .sw.hold{background:var(--hold)} .players .sw.other{background:transparent;border:1.5px solid var(--muted)}
+.players .n{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-weight:680;font-size:.95rem}
+.players .r{display:block;color:var(--muted);font-size:.88rem}
+
+/* stage */
+.stage{position:relative;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:16px 16px 6px}
+.plot{position:relative}
+.chart{position:relative;height:clamp(170px,26vw,270px)}
+.chart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ylab{position:absolute;left:4px;transform:translateY(-110%);font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;pointer-events:none}
+.dot{position:absolute;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:var(--btc);box-shadow:0 0 0 4px var(--fill);pointer-events:none}
+.lanes{margin-top:12px;display:grid;gap:10px}
+.lane-head{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-size:.84rem;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.lane-head .sw{width:.62rem;height:.62rem;border-radius:2px}
+.lane-head b{color:var(--ink);font-weight:700}
+.track{position:relative;height:28px;border-radius:4px;background:var(--grid)}
+.bar{position:absolute;top:0;bottom:0;border-radius:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-stretch:82%;font-weight:680;font-size:.8rem;line-height:28px;padding:0 6px;color:var(--onbar);opacity:.42;transition:opacity .3s ease}
+.bar.on{opacity:1}
+.bar.tight{color:transparent}
+.ex .bar{background:var(--ex)} .mine .bar{background:var(--mine)} .hold .bar{background:var(--hold)}
+.sw.ex{background:var(--ex)} .sw.mine{background:var(--mine)} .sw.hold{background:var(--hold)}
+.playhead{position:absolute;top:-8px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);opacity:.75;pointer-events:none}
+.axis{position:relative;height:30px;margin-top:6px}
+.axis button{position:absolute;top:2px;transform:translateX(-50%);background:none;border:0;padding:4px 3px;font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-size:.74rem;color:var(--muted);cursor:pointer;border-radius:4px;font-variant-numeric:tabular-nums}
+.axis button:hover{color:var(--ink)}
+.axis button.cur{color:var(--ink);font-weight:750}
+.axis button::before{content:"";position:absolute;left:50%;top:-4px;width:1px;height:5px;background:var(--rule)}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-weight:680;font-size:.92rem;border-radius:999px;padding:.55rem 1.05rem;border:1.5px solid var(--rule);background:var(--panel);color:var(--ink);cursor:pointer;min-width:5.2rem}
+.btn.primary{background:var(--btc);border-color:var(--btc);color:#14100A}
+.btn:hover{border-color:var(--ink)}
+.btn.primary:hover{filter:brightness(1.06);border-color:var(--btc)}
+input[type=range]{flex:1 1 220px;accent-color:var(--btc);min-width:160px;height:28px}
+:focus-visible{outline:2.5px solid var(--btc);outline-offset:2px}
+
+footer{margin-top:clamp(22px,3vw,36px);color:var(--muted);font-size:.86rem;max-width:80ch;line-height:1.5}
+footer p{margin:0 0 .5rem}
+
+@media (max-width:760px){
+  .main{grid-template-columns:minmax(0,1fr);grid-template-areas:"clock" "stage" "controls" "detail"}
+  .detail{min-height:0}
+  .players{grid-template-columns:minmax(0,1fr)}
+  .axis button.odd{display:none}
+  .stage{padding:12px 10px 4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .year.tick{animation:none}
+  .detail .fade,.bar{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Who ran bitcoin, year by year</h1>
+    <p>From Satoshi's whitepaper to Wall Street's ETFs: watch the price, and the companies that dominated trading, mining and holding, change hands since 2008.</p>
+  </header>
+
+  <div class="main">
+    <div class="clock" aria-live="off">
+      <span class="year" id="year">2008</span>
+      <div class="pricenow" id="pricenow">No market yet</div>
+    </div>
+
+    <section class="detail" aria-live="polite">
+      <div class="fade" id="detailInner"></div>
+    </section>
+
+    <div class="stage" id="stage">
+      <div class="plot" id="plot">
+        <div class="chart" id="chart">
+          <svg viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true">
+            <defs><clipPath id="reveal"><rect id="revealRect" x="0" y="-20" width="0" height="300"/></clipPath></defs>
+            <g id="grid"></g>
+            <g id="halvings"></g>
+            <g clip-path="url(#reveal)">
+              <path id="area" fill="var(--fill)" stroke="none"/>
+              <path id="line" fill="none" stroke="var(--btc)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            </g>
+          </svg>
+          <div id="ylabels"></div>
+          <div class="dot" id="dot" hidden></div>
+        </div>
+        <div class="lanes">
+          <div class="lane ex"><div class="lane-head"><span class="sw ex"></span>Biggest exchange: <b id="lead-ex">None yet</b></div><div class="track" id="track-ex"></div></div>
+          <div class="lane mine"><div class="lane-head"><span class="sw mine"></span>Mining leader: <b id="lead-mine">None yet</b></div><div class="track" id="track-mine"></div></div>
+          <div class="lane hold"><div class="lane-head"><span class="sw hold"></span>Largest fund or company holder: <b id="lead-hold">None yet</b></div><div class="track" id="track-hold"></div></div>
+        </div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+      <div class="axis" id="axis" aria-label="Jump to year"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="play" type="button">Pause</button>
+      <button class="btn" id="restart" type="button">Restart</button>
+      <button class="btn" id="speed" type="button" aria-label="Playback speed">Speed 1×</button>
+      <input type="range" id="scrub" aria-label="Timeline position">
+    </div>
+  </div>
+
+  <footer>
+    <p>Price line is drawn on a log scale through approximate year-end closes and major turning points; dashed lines mark the four halvings. Leadership periods are approximate: exchanges by reported trading volume, mining by pool or hardware share, holders by bitcoin held in a single fund or public company (exchange customer balances excluded).</p>
+    <p>Data through October 2, 2026. Not investment advice.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const T0 = 2008.75, T1 = 2026.78;
+  const SEC_PER_YEAR = 2.8;
+
+  // [decimal year, approx USD price]
+  const prices = [
+    [2009.78,0.00076],[2010.39,0.0041],[2010.55,0.06],[2010.99,0.30],[2011.11,1.0],[2011.44,31],[2011.88,2.2],
+    [2012.99,13.5],[2013.27,230],[2013.32,75],[2013.91,1150],[2014.15,550],[2014.99,320],[2015.04,175],[2015.99,430],
+    [2016.52,650],[2016.99,964],[2017.5,2500],[2017.96,19500],[2018.1,6900],[2018.95,3250],[2018.99,3740],
+    [2019.49,13500],[2019.99,7200],[2020.2,4900],[2020.6,11500],[2020.99,29000],[2021.28,63000],[2021.55,30000],
+    [2021.86,69000],[2022.45,20000],[2022.86,15600],[2022.99,16550],[2023.5,30500],[2023.99,42300],[2024.2,73000],
+    [2024.6,55000],[2024.96,106000],[2024.99,93400],[2025.3,76000],[2025.55,118000],[2025.76,126200],[2025.88,84000],
+    [2025.99,87500],[2026.04,97000],[2026.1,60500],[2026.3,75000],[2026.71,75000],[2026.76,86500]
+  ];
+  const halvings = [2012.91,2016.52,2020.36,2024.30];
+
+  const lanes = {
+    ex:[["BitcoinMarket.com",2010.2,2010.55],["Mt. Gox",2010.55,2014.15],["OKCoin, Huobi, BTCC",2014.15,2017.7],["Bitfinex",2017.7,2017.95],["Binance",2017.95,T1]],
+    mine:[["Satoshi and CPU hobbyists",2009.01,2010.95],["Slush Pool",2010.95,2011.4],["Deepbit",2011.4,2013.0],["Avalon, ASICMiner",2013.0,2013.9],["Bitmain",2013.9,2021.45],["Foundry USA, MARA",2021.45,T1]],
+    hold:[["Grayscale GBTC",2013.7,2024.4],["BlackRock IBIT",2024.4,2026.3],["Strategy",2026.3,T1]]
+  };
+
+  const years = {
+    2008:{h:"A nine-page PDF",b:"On October 31, someone using the name Satoshi Nakamoto posts the bitcoin whitepaper to a cryptography mailing list. There is no network, no price and not a single company yet.",p:[]},
+    2009:{h:"The network switches on",b:"Satoshi mines the genesis block on January 3 and sends the first transaction to Hal Finney nine days later. In October, New Liberty Standard publishes the first exchange rate: about 1,309 BTC for one dollar.",p:[["Satoshi Nakamoto","Mines most early blocks; those coins never move","mine"],["New Liberty Standard","Publishes the first dollar exchange rate","other"]]},
+    2010:{h:"First markets, first pizza",b:"BitcoinMarket.com opens in March as the first exchange. On May 22, Laszlo Hanyecz pays 10,000 BTC for two pizzas. Mt. Gox starts trading bitcoin in July, and Slush Pool, the first mining pool, finds its first block in December.",p:[["Mt. Gox","Becomes the dominant exchange within months","ex"],["BitcoinMarket.com","The first bitcoin exchange","ex"],["Slush Pool","First pool to combine miners' work","mine"]]},
+    2011:{h:"Parity, then the first crash",b:"Bitcoin reaches $1 in February and about $31 by June, before a Mt. Gox breach helps send it back toward $2. BitPay, Bitstamp and Blockchain.info all launch this year.",p:[["Mt. Gox","Handles the large majority of trading","ex"],["Deepbit","Largest mining pool","mine"],["BitPay","Merchant payment processor","other"],["Bitstamp","European exchange, founded in August","ex"]]},
+    2012:{h:"Coinbase and the first halving",b:"Coinbase is founded in San Francisco and starts selling bitcoin by bank transfer. On November 28 the block reward halves from 50 to 25 BTC.",p:[["Mt. Gox","Still the dominant exchange","ex"],["Coinbase","US brokerage, founded in June","other"],["BitPay","Leading merchant processor","other"],["Deepbit","Largest mining pool","mine"]]},
+    2013:{h:"Machines and a $1,000 coin",b:"The first ASIC miners ship and hobbyist mining fades. The FBI shuts Silk Road in October, and in November bitcoin passes $1,000 as Chinese buyers pile in. Bitmain is founded and Grayscale launches its Bitcoin Investment Trust.",p:[["Mt. Gox","Largest exchange, but cracks are showing","ex"],["BTC China","Leads trading volume by late 2013","ex"],["Avalon, ASICMiner","First ASIC hardware makers","mine"],["Grayscale","Launches the Bitcoin Investment Trust","hold"]]},
+    2014:{h:"Mt. Gox collapses",b:"In February the largest exchange halts withdrawals and files for bankruptcy with about 850,000 BTC missing. Volume shifts to Bitstamp, Bitfinex and Chinese venues, Bitmain's Antminers take over mining, and Blockstream is founded.",p:[["OKCoin, Huobi","Chinese exchanges with the highest reported volume","ex"],["Bitstamp, Bitfinex","Largest dollar markets after Gox","ex"],["Bitmain","Antminer hardware takes over","mine"],["Grayscale","Bitcoin Investment Trust","hold"]]},
+    2015:{h:"Regulated on-ramps",b:"New York's BitLicense takes effect. Coinbase opens a US-licensed exchange and the Winklevoss twins launch Gemini. Grayscale's GBTC begins trading over the counter, giving ordinary brokerage accounts a way in.",p:[["Huobi, OKCoin","Top reported volume, much of it fee-free","ex"],["Bitmain","Dominant hardware and pool operator","mine"],["Coinbase","Leading US gateway","other"],["Grayscale GBTC","Largest bitcoin fund","hold"]]},
+    2016:{h:"Second halving, Bitfinex hack",b:"The reward drops to 12.5 BTC in July. In August, hackers take roughly 120,000 BTC from Bitfinex. Chinese exchanges report the overwhelming majority of global trading volume.",p:[["OKCoin, Huobi, BTCC","China dominates reported volume","ex"],["Bitmain","Antminer S9 era begins","mine"],["Bitfinex","Largest dollar exchange, despite the hack","ex"],["Grayscale GBTC","Largest bitcoin fund","hold"]]},
+    2017:{h:"The block-size war and a mania",b:"SegWit activates in August after a long fight, and Bitcoin Cash splits off with Bitmain's backing. China shuts its exchanges in September as a new one, Binance, rockets up. CME and Cboe launch futures in December, near the $20,000 peak.",p:[["Binance","Largest exchange by volume by year end","ex"],["Coinbase","Tops the US App Store in December","other"],["Bitmain","Most of the world's mining hardware","mine"],["BitMEX","Leading derivatives venue","ex"]]},
+    2018:{h:"Crypto winter",b:"Bitcoin falls roughly 73% over the year. Binance is now the largest exchange, the Lightning Network goes live on mainnet, and Fidelity sets up a custody arm for institutions. Bitmain files for a Hong Kong IPO that never happens.",p:[["Binance","Largest exchange","ex"],["Bitmain","Largest miner and hardware maker","mine"],["Coinbase","Largest US exchange","other"],["Grayscale GBTC","Largest bitcoin fund","hold"]]},
+    2019:{h:"Quiet rebuilding",b:"Binance loses 7,000 BTC in a May hack and covers it from its own reserve fund. Bakkt launches physically settled futures, and the price climbs to about $13,800 in June before fading.",p:[["Binance","Largest exchange","ex"],["Bitmain","Still leads mining hardware","mine"],["Grayscale GBTC","Largest bitcoin fund","hold"],["Coinbase","Largest US exchange","other"]]},
+    2020:{h:"Corporations arrive",b:"After a March crash, the third halving cuts the reward to 6.25 BTC in May. In August MicroStrategy puts 21,454 BTC on its balance sheet, Square and PayPal follow, and Grayscale's trust swells past 600,000 BTC.",p:[["Grayscale GBTC","Largest institutional holder","hold"],["Binance","Largest exchange","ex"],["Coinbase","Largest US exchange","other"],["MicroStrategy","First big corporate treasury buyer","hold"]]},
+    2021:{h:"Wall Street and nation-states",b:"Tesla buys $1.5 billion of bitcoin and Coinbase lists on Nasdaq in April. China bans mining, pushing hashrate to the US. El Salvador makes bitcoin legal tender, the first futures ETF launches, and bitcoin peaks near $69,000 in November.",p:[["Coinbase","Goes public on Nasdaq","other"],["Binance","Largest exchange","ex"],["Foundry USA","Rises as mining leaves China","mine"],["MicroStrategy","Largest corporate holder","hold"]]},
+    2022:{h:"Contagion",b:"Terra collapses in May, taking Celsius and Three Arrows Capital with it. FTX implodes in November. Bitcoin ends the year down about 64%, and GBTC trades at close to half the value of the bitcoin it holds.",p:[["Binance","Largest exchange","ex"],["Coinbase","Largest US exchange","other"],["Grayscale GBTC","Largest fund, at a deep discount","hold"],["Foundry USA","Largest mining pool","mine"]]},
+    2023:{h:"Courtrooms",b:"BlackRock files for a spot bitcoin ETF in June, and Grayscale beats the SEC in court in August. In November Binance pleads guilty to US charges, agrees to pay $4.3 billion, and CZ steps down.",p:[["Binance","Still the largest exchange","ex"],["Grayscale GBTC","Largest fund","hold"],["MicroStrategy","Largest corporate holder","hold"],["BlackRock","Files for a spot ETF","other"]]},
+    2024:{h:"The ETF year",b:"Spot bitcoin ETFs start trading January 11. BlackRock's IBIT becomes one of the fastest-growing ETFs ever and passes Grayscale by late May. The fourth halving cuts the reward to 3.125 BTC in April, and bitcoin crosses $100,000 in December.",p:[["BlackRock IBIT","Largest bitcoin fund","hold"],["MicroStrategy","Ends the year with about 446,000 BTC","hold"],["Coinbase","Custodian for most of the new ETFs","other"],["Binance","Largest exchange","ex"]]},
+    2025:{h:"Treasuries everywhere",b:"MicroStrategy renames itself Strategy, the US creates a Strategic Bitcoin Reserve, and Coinbase joins the S&P 500. Public companies end the year holding over a million BTC. Bitcoin hits about $126,000 on October 6, then finishes the year near $87,000.",p:[["Strategy","About 672,500 BTC at year end","hold"],["BlackRock IBIT","Largest bitcoin ETF","hold"],["Binance","Largest exchange","ex"],["Metaplanet","Asia's largest treasury, about 30,800 BTC","hold"]]},
+    2026:{h:"A crash, then a new leader",b:"Bitcoin falls to around $60,000 in early February. Strategy keeps buying and on April 20 passes IBIT as the largest institutional holder. By late September it holds about 847,700 BTC, and bitcoin trades near $86,000 in early October.",p:[["Strategy","847,666 BTC as of September 27","hold"],["BlackRock IBIT","About $67 billion of bitcoin","hold"],["Binance","Still the largest exchange by spot volume","ex"],["Coinbase","Largest US exchange and ETF custodian","other"]]}
+  };
+
+  const $ = id => document.getElementById(id);
+  const xPct = t => (t - T0) / (T1 - T0) * 100;
+  const LMIN = -3.6, LMAX = 5.35;
+  const yPct = p => (1 - (Math.log10(p) - LMIN) / (LMAX - LMIN)) * 100;
+
+  // build price path
+  const VW = 1000, VH = 260;
+  const pts = prices.map(([t,p]) => [xPct(t)/100*VW, yPct(p)/100*VH]);
+  const d = pts.map((q,i) => (i ? "L" : "M") + q[0].toFixed(2) + " " + q[1].toFixed(2)).join(" ");
+  $("line").setAttribute("d", d);
+  $("area").setAttribute("d", d + ` L${pts[pts.length-1][0].toFixed(2)} ${VH} L${pts[0][0].toFixed(2)} ${VH} Z`);
+
+  // grid
+  const svgNS = "http://www.w3.org/2000/svg";
+  const gridVals = [[0.01,"$0.01"],[1,"$1"],[100,"$100"],[100000,"$100k"]];
+  gridVals.forEach(([v,label]) => {
+    const y = yPct(v)/100*VH;
+    const l = document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",0); l.setAttribute("x2",VW); l.setAttribute("y1",y); l.setAttribute("y2",y);
+    l.setAttribute("stroke","var(--grid)"); l.setAttribute("stroke-width","1"); l.setAttribute("vector-effect","non-scaling-stroke");
+    $("grid").appendChild(l);
+    const s = document.createElement("span"); s.className = "ylab"; s.style.top = yPct(v) + "%"; s.textContent = label;
+    $("ylabels").appendChild(s);
+  });
+  halvings.forEach(h => {
+    const x = xPct(h)/100*VW;
+    const l = document.createElementNS(svgNS,"line");
+    l.setAttribute("x1",x); l.setAttribute("x2",x); l.setAttribute("y1",0); l.setAttribute("y2",VH);
+    l.setAttribute("stroke","var(--muted)"); l.setAttribute("stroke-opacity",".45"); l.setAttribute("stroke-dasharray","3 4"); l.setAttribute("vector-effect","non-scaling-stroke");
+    $("halvings").appendChild(l);
+  });
+
+  // lanes
+  const barEls = {};
+  Object.entries(lanes).forEach(([k, arr]) => {
+    barEls[k] = arr.map(([name, s, e]) => {
+      const b = document.createElement("div");
+      b.className = "bar"; b.textContent = name; b.title = name;
+      b.style.left = xPct(s) + "%"; b.style.width = "0%"; b.style.display = "none";
+      $("track-" + k).appendChild(b);
+      return {el:b, name, s, e};
+    });
+  });
+
+  // axis
+  const axisBtns = {};
+  for (let y = 2009; y <= 2026; y++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = (y === 2009 || y === 2026) ? String(y) : "’" + String(y).slice(2);
+    if ((y % 2 === 0 && y !== 2026) || y === 2025) btn.classList.add("odd");
+    btn.style.left = xPct(y) + "%";
+    btn.setAttribute("aria-label", "Jump to " + y);
+    btn.addEventListener("click", () => { pause(); setT(Math.min(y + 0.999, T1)); });
+    $("axis").appendChild(btn);
+    axisBtns[y] = btn;
+  }
+
+  function priceAt(t){
+    if (t < prices[0][0]) return null;
+    for (let i = 1; i < prices.length; i++){
+      if (t <= prices[i][0]){
+        const [t0,p0] = prices[i-1], [t1,p1] = prices[i];
+        const f = (t - t0) / (t1 - t0);
+        return Math.pow(10, Math.log10(p0) + f * (Math.log10(p1) - Math.log10(p0)));
+      }
+    }
+    return prices[prices.length-1][1];
+  }
+  function fmt(p){
+    if (p < 0.01) return "$" + p.toFixed(4);
+    if (p < 100) return "$" + p.toFixed(2);
+    return "$" + Math.round(p).toLocaleString("en-US");
+  }
+
+  let currentYear = null;
+  function renderYear(y){
+    const data = years[y];
+    const inner = $("detailInner");
+    const build = () => {
+      let html = `<h2>${data.h}</h2><p>${data.b}</p>`;
+      html += `<p class="players-h">Biggest players</p>`;
+      if (!data.p.length) html += `<p style="color:var(--muted);margin:0">No companies yet.</p>`;
+      else html += `<ul class="players">` + data.p.map(([n,r,c]) => `<li><span class="sw ${c}"></span><span><span class="n">${n}</span><span class="r">${r}</span></span></li>`).join("") + `</ul>`;
+      inner.innerHTML = html;
+    };
+    if (reduce || currentYear === null){ build(); return; }
+    inner.classList.add("out");
+    setTimeout(() => { build(); inner.classList.remove("out"); }, 180);
+  }
+
+  let t = T0, playing = false, speed = 1, last = null;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const scrub = $("scrub");
+  scrub.min = T0; scrub.max = T1; scrub.step = 0.01;
+
+  function setT(nt){
+    t = Math.max(T0, Math.min(T1, nt));
+    const xp = xPct(t);
+    $("revealRect").setAttribute("width", (xp/100*VW).toFixed(2));
+    $("playhead").style.left = xp + "%";
+    scrub.value = t;
+
+    const p = priceAt(t);
+    const dot = $("dot");
+    if (p === null){ dot.hidden = true; $("pricenow").textContent = t < 2009 ? "No market yet" : "No price yet"; }
+    else {
+      dot.hidden = false; dot.style.left = xp + "%"; dot.style.top = yPct(p) + "%";
+      $("pricenow").innerHTML = `1 bitcoin ≈ <b>${fmt(p)}</b>`;
+    }
+
+    Object.entries(barEls).forEach(([k, arr]) => {
+      let lead = null;
+      arr.forEach(o => {
+        if (t < o.s){ o.el.style.display = "none"; return; }
+        o.el.style.display = "block";
+        o.el.style.width = (xPct(Math.min(t, o.e)) - xPct(o.s)) + "%";
+        const on = t >= o.s && t < o.e + 0.0001;
+        o.el.classList.toggle("on", on);
+        o.el.classList.toggle("tight", o.el.offsetWidth < 36);
+        if (on) lead = o.name;
+      });
+      $("lead-" + k).textContent = lead || "None yet";
+    });
+
+    const y = Math.min(2026, Math.floor(t));
+    if (y !== currentYear){
+      const ye = $("year");
+      ye.textContent = y;
+      if (!reduce){ ye.classList.remove("tick"); void ye.offsetWidth; ye.classList.add("tick"); }
+      Object.entries(axisBtns).forEach(([k,b]) => b.classList.toggle("cur", +k === y));
+      renderYear(y);
+      currentYear = y;
+    }
+  }
+
+  function frame(ts){
+    if (!playing) return;
+    if (last === null) last = ts;
+    const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+    setT(t + dt * speed / SEC_PER_YEAR);
+    if (t >= T1){ pause(); return; }
+    requestAnimationFrame(frame);
+  }
+  function play(){
+    if (t >= T1) setT(T0);
+    playing = true; last = null; $("play").textContent = "Pause";
+    requestAnimationFrame(frame);
+  }
+  function pause(){ playing = false; $("play").textContent = "Play"; }
+
+  $("play").addEventListener("click", () => playing ? pause() : play());
+  $("restart").addEventListener("click", () => { setT(T0); play(); });
+  $("speed").addEventListener("click", () => {
+    speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+    $("speed").textContent = "Speed " + speed + "×";
+  });
+  scrub.addEventListener("input", () => { pause(); setT(parseFloat(scrub.value)); });
+
+  if (reduce){ setT(T1); pause(); }
+  else { setT(T0); $("play").textContent = "Pause"; setTimeout(play, 700); }
+})();
+</script>
+</body>
+</html>
